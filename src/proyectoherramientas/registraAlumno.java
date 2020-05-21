@@ -32,9 +32,11 @@ public class registraAlumno extends JFrame implements ActionListener{
     KeyAdapter k_texto,k_boleta;
     BD conn;
     ResultSet rs;
-    
-    public registraAlumno(int ancho,int largo){
-        
+    int caracteres=9;
+    int tipo=1;
+    String profesor;
+    public registraAlumno(int ancho,int largo,int tipo){
+        this.tipo = tipo;
         //**************************************INSTANCIAS**********************************
         //BOTONES
         btn_cancelar = new JButton("Cancelar");
@@ -88,6 +90,14 @@ public class registraAlumno extends JFrame implements ActionListener{
         txt_matricula.setHorizontalAlignment(JTextField.CENTER);
         txt_matricula.setBounds(220,160,150,30);
         
+        if(tipo==0){
+            lbl_matricula.setText("* NUMERO ECONOMICO:");
+            lbl_matricula.setBounds(50,150,300,50);
+            
+            txt_matricula.setBounds(350,160,150,30);
+            caracteres = 8;
+        }
+        
         //OTROS
         k_texto = new KeyAdapter() {
             @Override
@@ -102,7 +112,7 @@ public class registraAlumno extends JFrame implements ActionListener{
             @Override
             public void keyTyped(KeyEvent ke) {
                 char c = ke.getKeyChar();
-                if (c<'0' || c>'9'||txt_matricula.getText().length() > 9){
+                if (c<'0' || c>'9'||txt_matricula.getText().length() > caracteres){
                     ke.consume();
                 }
             }
@@ -128,8 +138,12 @@ public class registraAlumno extends JFrame implements ActionListener{
         txt_pA.addKeyListener(k_texto);
         txt_sA.addKeyListener(k_texto);
         txt_matricula.addKeyListener(k_boleta);
+        if(tipo==0){
+            setTitle("Registrar Profesor");
+        }else{
+            setTitle("Registrar Alumno");
+        }
         
-        setTitle("Registrar Alumno");
         setLayout(null);
         setLocation(450,200);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -139,8 +153,9 @@ public class registraAlumno extends JFrame implements ActionListener{
         setVisible(true);
     }
 
-    registraAlumno(String boleta, String pA, String sA, String nombres) {
+    registraAlumno(String boleta, String pA, String sA, String nombres, int tipo) {
         int ancho = 600,largo = 500;
+        this.tipo=tipo;
         //**************************************INSTANCIAS**********************************
         //BOTONES
         btn_cancelar = new JButton("Cancelar");
@@ -219,6 +234,20 @@ public class registraAlumno extends JFrame implements ActionListener{
         txt_matricula.setBounds(220,300,150,30);
         txt_matricula.setEditable(false);
         
+        if(tipo==0){
+            pic.setIcon(new ImageIcon(getClass().getResource("/imagenes/prof.png")));
+            pic.setBounds((ancho-460)/2,30,120,120);
+            mat.setText("NUMERO ECONOMICO");
+            mat.setBounds((ancho-460)/2+140,30,150,30);
+            matnum.setBounds((ancho-460)/2+140,75,150,30);
+            nomb.setBounds((ancho-460)/2+300,30,150,30);
+            completo.setBounds((ancho-460)/2+300,75,160,30);
+            lbl_matricula.setText("* NUMERO ECONOMICO:");
+            lbl_matricula.setBounds(40,290,300,50);
+            
+            txt_matricula.setBounds(340,300,150,30);
+        }
+        
         //OTROS
         k_texto = new KeyAdapter() {
             @Override
@@ -255,7 +284,11 @@ public class registraAlumno extends JFrame implements ActionListener{
         txt_pA.addKeyListener(k_texto);
         txt_sA.addKeyListener(k_texto);
         
-        setTitle("Modificar Alumno");
+        if(tipo==0){
+            setTitle("Modificar Profesor");
+        }else{
+            setTitle("Modificar Alumno");
+        }
         setLayout(null);
         setLocation(450,200);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -264,17 +297,21 @@ public class registraAlumno extends JFrame implements ActionListener{
         setResizable(false);
         setVisible(true);
     }
+    
+    public void setProfesor(String prof){
+        this.profesor=prof;
+    }
     @Override
     public void actionPerformed(ActionEvent e) {
         String evento = e.getActionCommand();
         String boleta = txt_matricula.getText();
-        String pA = txt_pA.getText();
-        String sA = txt_sA.getText();
-        String nomb = txt_nombres.getText();
+        String pA = txt_pA.getText().toUpperCase();
+        String sA = txt_sA.getText().toUpperCase();
+        String nomb = txt_nombres.getText().toUpperCase();
         ConsultarAlumnos cA;
+        ConsultarProfesores lp;
         switch (evento){
             case "Registrar":
-                            System.out.println("boton registrar2 presionado");
                             if(boleta.equals(" ")||boleta.equals("")||pA.equals(" ")||pA.equals("")||nomb.equals(" ")||nomb.equals("")){
                                 JOptionPane.showMessageDialog(null,"Existen campos obligatorios que se encuentran vacios","ERROR!",JOptionPane.INFORMATION_MESSAGE);
                             }else{
@@ -282,12 +319,30 @@ public class registraAlumno extends JFrame implements ActionListener{
                                 conn = new BD();
                                 try {
                                     conn.conectar();
-                                    rs = conn.consulta("CALL sp_registraAlumno("+boleta+",'"+pA+"','"+sA+"','"+nomb+"');");
-                                    if(rs.next()){
-                                        if(rs.getString(1).equals("0")){
-                                            JOptionPane.showMessageDialog(null,"Se ha registrado el alumno con exito","Completado",JOptionPane.INFORMATION_MESSAGE);
-                                        }else{
-                                            JOptionPane.showMessageDialog(null,"Ya se ha registrado un alumno con la matricula ingresada","ERROR!",JOptionPane.INFORMATION_MESSAGE);
+                                    if(tipo==0){
+                                        //_____________________PROFESORES
+                                        System.out.println("registrar profesor");
+                                        rs = conn.consulta("CALL sp_registraProfesor("+boleta+",'"+pA+"','"+sA+"','"+nomb+"');");
+                                        if(rs.next()){
+                                            if(rs.getString(1).equals("0")){
+                                                JOptionPane.showMessageDialog(null,"Se ha registrado el profesor con exito","Completado",JOptionPane.INFORMATION_MESSAGE);
+                                            }else{
+                                                JOptionPane.showMessageDialog(null,"Ya se ha registrado un profesor con\nel numero unico ingresado","ERROR!",JOptionPane.INFORMATION_MESSAGE);
+                                            }
+                                        }
+                                    }else{//____________________ALUMNOS
+                                        System.out.println("registrar alumno");
+                                        rs = conn.consulta("CALL sp_inscribirAlumno("+profesor+","+boleta+",'"+pA+"','"+sA+"','"+nomb+"');");
+                                        if(rs.next()){
+                                            if(rs.getString(1).equals("0")){
+                                                JOptionPane.showMessageDialog(null,"Se ha registrado el alumno y agregado a \nla lista del profesor con exito","Completado",JOptionPane.INFORMATION_MESSAGE);
+                                            }
+                                            if(rs.getString(1).equals("1")){
+                                                JOptionPane.showMessageDialog(null,"La matricula ya esta en uso, se ha agregado \nel alumno existente a la lista del profesor","Alerta!",JOptionPane.INFORMATION_MESSAGE);
+                                            }
+                                            if(rs.getString(1).equals("2")){
+                                                JOptionPane.showMessageDialog(null,"  La matricula ya se ha registrado y ya se \nencuentra en la lista del profesor","ERROR!",JOptionPane.INFORMATION_MESSAGE);
+                                            }
                                         }
                                     }
                                     conn.cerrar();
@@ -300,14 +355,18 @@ public class registraAlumno extends JFrame implements ActionListener{
             case "Cancelar":
                             this.dispose();
                             try {
-                                cA = new ConsultarAlumnos();
-                                cA.setVisible(true);
+                                if(tipo==0){
+                                   lp = new ConsultarProfesores();
+                                   lp.setVisible(true);
+                                }else{
+                                   cA = new ConsultarAlumnos(profesor);
+                                   cA.setVisible(true);
+                                }
                             } catch (UnsupportedLookAndFeelException ex) {
                                 Logger.getLogger(registraAlumno.class.getName()).log(Level.SEVERE, null, ex);
                             }
                             break;
             case "Modificar":
-                            System.out.println("boton editar presionado");
                             if(pA.equals(" ")||pA.equals("")||nomb.equals(" ")||nomb.equals("")){
                                 JOptionPane.showMessageDialog(null,"Existen campos obligatorios que se encuentran vacios","ERROR!",JOptionPane.INFORMATION_MESSAGE);
                             }else{
@@ -315,20 +374,42 @@ public class registraAlumno extends JFrame implements ActionListener{
                                 conn = new BD();
                                 try {
                                     conn.conectar();
-                                    rs = conn.consulta("CALL sp_modificaAlumno("+boleta+",'"+pA+"','"+sA+"','"+nomb+"');");
-                                    if(rs.next()){
-                                        if(rs.getString(1).equals("1")){
-                                            JOptionPane.showMessageDialog(null,"Se han modificado los datos con exito!","Completado",JOptionPane.INFORMATION_MESSAGE);
-                                            this.dispose();
-                                            try {
-                                                cA = new ConsultarAlumnos();
-                                                cA.setVisible(true);
-                                            } catch (UnsupportedLookAndFeelException ex) {
-                                                Logger.getLogger(registraAlumno.class.getName()).log(Level.SEVERE, null, ex);
-                                            } 
-                                        }else{
-                                            JOptionPane.showMessageDialog(null,"No es una matricula existente","ERROR!",JOptionPane.INFORMATION_MESSAGE);
-                                        }
+                                    if(tipo==0){
+                                        //_____________________PROFESORES
+                                        System.out.println("modificar profesor");
+                                        rs = conn.consulta("CALL sp_modificaProfesor("+boleta+",'"+pA+"','"+sA+"','"+nomb+"');");
+                                        if(rs.next()){
+                                            if(rs.getString(1).equals("1")){
+                                                JOptionPane.showMessageDialog(null,"Se han modificado los datos con exito!","Completado",JOptionPane.INFORMATION_MESSAGE);
+                                                this.dispose();
+                                                try {
+                                                    lp = new ConsultarProfesores();
+                                                    lp.setVisible(true);
+                                                } catch (UnsupportedLookAndFeelException ex) {
+                                                    Logger.getLogger(registraAlumno.class.getName()).log(Level.SEVERE, null, ex);
+                                                } 
+                                            }else{
+                                                JOptionPane.showMessageDialog(null,"El numero unico no es valido","ERROR!",JOptionPane.INFORMATION_MESSAGE);
+                                            }
+                                        }//fin de rs.next
+                                    }else{
+                                        //_____________________ALUMNOS
+                                        System.out.println("modificar alumno");
+                                        rs = conn.consulta("CALL sp_modificaAlumno("+boleta+",'"+pA+"','"+sA+"','"+nomb+"');");
+                                        if(rs.next()){
+                                            if(rs.getString(1).equals("1")){
+                                                JOptionPane.showMessageDialog(null,"Se han modificado los datos con exito!","Completado",JOptionPane.INFORMATION_MESSAGE);
+                                                this.dispose();
+                                                try {
+                                                    cA = new ConsultarAlumnos(profesor);
+                                                    cA.setVisible(true);
+                                                } catch (UnsupportedLookAndFeelException ex) {
+                                                    Logger.getLogger(registraAlumno.class.getName()).log(Level.SEVERE, null, ex);
+                                                } 
+                                            }else{
+                                                JOptionPane.showMessageDialog(null,"No es una matricula existente","ERROR!",JOptionPane.INFORMATION_MESSAGE);
+                                            }
+                                        }//fin de rs.next
                                     }
                                     conn.cerrar();
                                 } catch (SQLException ex) {

@@ -9,8 +9,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 public class DoubleButtonRenderer extends DefaultTableCellRenderer {
     private DoubleButtonPane dobleBoton = null;
 
-    DoubleButtonRenderer() {
-        dobleBoton = new DoubleButtonPane();
+    DoubleButtonRenderer(int tipo) {
+        dobleBoton = new DoubleButtonPane(tipo);
     }
         
     @Override

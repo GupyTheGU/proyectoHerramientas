@@ -20,7 +20,7 @@ public class ProyectoHerramientas {
      */
     public static void main(String[] args) {
         try {
-            new ConsultarAlumnos();
+            new ConsultarProfesores();
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(ProyectoHerramientas.class.getName()).log(Level.SEVERE, null, ex);
         }

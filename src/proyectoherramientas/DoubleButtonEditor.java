@@ -16,9 +16,9 @@ public class DoubleButtonEditor extends AbstractCellEditor implements TableCellE
     
     private DoubleButtonPane dobleBoton;
 
-        public DoubleButtonEditor() {
+        public DoubleButtonEditor(int tipo) {
             
-            dobleBoton = new DoubleButtonPane();
+            dobleBoton = new DoubleButtonPane(tipo);
             dobleBoton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
