@@ -24,6 +24,7 @@ public class BD {
     }
     public BD() {
         //poner los datos apropiados
+        //hola soy un comentario hehe
         this.usrBD = "root";
         this.passBD = "n0m3l0";
         this.urlBD = "jdbc:mysql://127.0.0.1:3306/DBlistas";
